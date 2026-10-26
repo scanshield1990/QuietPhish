@@ -1,0 +1,3 @@
+[submodule "email-corpus"]
+	path = email-corpus
+	url = https://github.com/cw-l/email-corpus.git

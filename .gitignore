@@ -45,7 +45,6 @@ settings.json
 Thumbs.db
 desktop.ini
 # Email corpus is cloned separately during installation
-/email-corpus/
 
 # Exclude preserved Git repository backups
 .git-backup/
