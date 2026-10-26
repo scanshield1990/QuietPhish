@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}{{ r.source.subject or 'Report' }} · PhishGuard{% endblock %}
+{% block page_title %}{{ r.source.subject or '(no subject)' }}<small>Report {{ r.report_id }}</small>{% endblock %}
+{% block content %}
+<!-- Original Email Investigation -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-h">
+    <h3>📧 Email Investigation</h3>
+    <span class="sub">Preserved original email evidence</span>
+  </div>
+
+  <div class="card-b">
+    {% if email_message %}
+
+      <dl class="kv">
+        <dt>From</dt>
+        <dd>{{ email_message.get('From', '—') }}</dd>
+
+        <dt>To</dt>
+        <dd>{{ email_message.get('To', '—') }}</dd>
+
+        <dt>Subject</dt>
+        <dd>{{ email_message.get('Subject', '—') }}</dd>
+
+        <dt>Date</dt>
+        <dd>{{ email_message.get('Date', '—') }}</dd>
+      </dl>
+
+      <h4 style="margin-top:20px">Original Email Body</h4>
+
+      {% if email_body %}
+        <pre style="white-space:pre-wrap;overflow-wrap:anywhere;
+                    background:var(--surface);padding:16px;
+                    border-radius:10px">{{ email_body }}</pre>
+      {% else %}
+        <div class="alert info">
+          No plain-text email body available.
+        </div>
+      {% endif %}
+
+    {% else %}
+
+      <div class="alert info">
+        Original email evidence is unavailable for this report.
+      </div>
+
+    {% endif %}
+  </div>
+</div>
+<!-- Email Header Investigation -->
+<div class="card" style="margin-bottom:20px">
+
+  <div class="card-h">
+    <h3>🔍 Email Header Investigation</h3>
+    <span class="sub">Original message headers</span>
+  </div>
+
+  <div class="card-b">
+
+    {% if email_headers %}
+
+      <details>
+        <summary style="cursor:pointer;font-weight:bold">
+          View Original Email Headers
+        </summary>
+
+        <div style="margin-top:16px">
+
+          {% for name, value in email_headers %}
+
+            <div style="margin-bottom:14px">
+
+              <div style="font-weight:bold;color:var(--text)">
+                {{ name }}
+              </div>
+
+              <pre style="white-space:pre-wrap;
+                          overflow-wrap:anywhere;
+                          background:var(--surface);
+                          padding:12px;
+                          border-radius:8px">{{ value }}</pre>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+      </details>
+
+    {% else %}
+
+      <div class="alert info">
+        No original email headers available.
+      </div>
+
+    {% endif %}
+
+  </div>
+</div>
+<!-- IoC Investigation -->
+<div class="card" style="margin-bottom:20px">
+
+  <div class="card-h">
+    <h3>🎯 IoC Investigation</h3>
+    <span class="sub">Hashes, attachments, and extracted links</span>
+  </div>
+
+  <div class="card-b">
+
+    <details>
+      <summary style="cursor:pointer;font-weight:bold;margin-bottom:16px">
+        View Investigation Indicators
+      </summary>
+
+      <div style="margin-top:16px">
+    <!-- Hashes Section -->
+    <h4>🔐 Hashes</h4>
+
+    {% if email_sha256 %}
+
+      <div style="margin-top:12px;margin-bottom:20px">
+
+        <div class="muted small" style="margin-bottom:8px">
+          Original Email — SHA-256
+        </div>
+
+        <pre style="white-space:pre-wrap;
+                    overflow-wrap:anywhere;
+                    background:var(--surface);
+                    padding:14px;
+                    border-radius:8px">{{ email_sha256 }}</pre>
+
+      </div>
+
+    {% else %}
+
+      <div class="alert info">
+        No original email hash available.
+      </div>
+
+    {% endif %}
+
+    <hr style="margin:24px 0;border:0;border-top:1px solid var(--border)">
+
+    <!-- Attachments Section -->
+    <h4>📎 Attachments</h4>
+
+{% if r.attachments %}
+
+  {% for attachment in r.attachments %}
+
+    <div style="background:var(--surface);
+                padding:16px;
+                border-radius:10px;
+                margin-top:12px">
+
+      <div style="font-weight:bold;margin-bottom:12px">
+        📎 {{ attachment.filename }}
+      </div>
+
+      <dl class="kv">
+        <dt>File type</dt>
+        <dd>{{ attachment.content_type }}</dd>
+
+        <dt>File size</dt>
+        <dd>{{ attachment.size }} bytes</dd>
+
+        <dt>SHA-256</dt>
+        <dd style="overflow-wrap:anywhere">
+          {{ attachment.sha256 }}
+        </dd>
+
+        <dt>MD5</dt>
+        <dd style="overflow-wrap:anywhere">
+          {{ attachment.md5 }}
+        </dd>
+      </dl>
+
+      <a href="{{ url_for('download_attachment', report_id=r.report_id, attachment_index=loop.index0) }}"
+         class="btn"
+         style="display:inline-block;margin-top:12px">
+          ⬇ Download for Sandbox Analysis
+      </a>
+
+    </div>
+
+  {% endfor %}
+
+{% else %}
+
+  <div class="muted small" style="margin-top:12px">
+    No attachments detected in this email.
+  </div>
+
+{% endif %}
+
+    
+<!-- Links Section -->
+<h4>🔗 Links Found in Email</h4>
+
+{% if r.urls %}
+
+  <div style="margin-top:12px">
+
+    {% for url in r.urls %}
+
+      <div style="background:var(--surface);
+                  padding:16px;
+                  border-radius:10px;
+                  margin-bottom:12px">
+
+        <div style="font-weight:bold;margin-bottom:8px">
+          🔗 URL {{ loop.index }}
+        </div>
+
+        <pre style="white-space:pre-wrap;
+                    overflow-wrap:anywhere;
+                    margin:0">{{ url }}</pre>
+
+      </div>
+
+    {% endfor %}
+
+  </div>
+
+{% else %}
+
+  <div class="muted small" style="margin-top:12px">
+    No URLs detected in this email.
+  </div>
+
+{% endif %}
+
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:1.7fr 1fr;align-items:start">
+  <div class="grid" style="gap:18px">
+    <div class="card">
+      <div class="card-b">
+        <div class="hero">
+          <div class="ring" style="--p:{{ r.risk_score }}"><b>{{ r.risk_score }}</b></div>
+          <div style="flex:1;min-width:0">
+            <div class="actions" style="margin-bottom:8px">
+              <span class="badge {{ r.verdict }}"><span class="bdot"></span>{{ r.verdict|capitalize }}</span>
+              <span class="pill">{{ r.analyzers|length }} analyzers run</span>
+              <span class="pill">{{ r.timestamp[:19]|replace('T',' ') }}</span>
+            </div>
+            <div class="muted small">From <b style="color:var(--text)">{{ r.sender.display_name or r.sender.from }}</b> &lt;{{ r.sender.from }}&gt;</div>
+          </div>
+        </div>
+        {% if r.summary %}<div class="alert info" style="margin-top:16px;margin-bottom:0">{{ r.summary }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Findings</h3><span class="sub">grouped by analyzer</span></div>
+      <div class="card-b">
+        {% for a in r.analyzers %}
+        <div class="analyzer-block">
+          <h4>{{ a.name }} <span class="sc">+{{ a.score }}</span></h4>
+          {% if a.findings %}
+            {% for f in a.findings %}
+            <div class="finding">
+              <div class="ft"><b>{{ f.title }}</b><span class="sev {{ f.severity }}">{{ f.severity }}</span></div>
+              <div class="fd">{{ f.detail }}</div>
+              <div class="fd muted small">contribution: +{{ f.score }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="muted small" style="padding:4px 0">No findings.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="gap:18px">
+    <div class="card">
+      <div class="card-h"><h3>Details</h3></div>
+      <div class="card-b">
+        <dl class="kv">
+          <dt>Message-ID</dt><dd>{{ r.source.message_id or '—' }}</dd>
+          <dt>Sender domain</dt><dd>{{ r.sender.from_domain or '—' }}</dd>
+          <dt>Envelope from</dt><dd>{{ r.sender.envelope_from or '—' }}</dd>
+          <dt>Source</dt><dd>{{ r.source.type or 'email' }}{% if r.source.mailbox_id %} · {{ r.source.mailbox_id }}{% endif %}</dd>
+          <dt>URLs</dt><dd>{{ r.urls|length }}</dd>
+          <dt>Attachments</dt><dd>{{ r.attachments|length }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    {% if r.recommended_actions %}
+    <div class="card">
+      <div class="card-h"><h3>Recommended actions</h3></div>
+      <div class="card-b"><ul class="small" style="margin:0;padding-left:18px;color:var(--muted)">{% for a in r.recommended_actions %}<li style="margin-bottom:6px">{{ a }}</li>{% endfor %}</ul></div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-h"><h3>Analyst feedback</h3></div>
+      <div class="card-b">
+        {% if feedback %}<div class="muted small" style="margin-bottom:12px">Recorded: {% for f in feedback %}<span class="pill">{{ f.label }}</span>{% endfor %}</div>{% endif %}
+        <form method="post">
+          <div class="field">
+            <label>Verdict label</label>
+            <select name="label">
+              <option value="">— no change —</option>
+              <option value="true_positive">True positive</option>
+              <option value="false_positive">False positive</option>
+              <option value="benign">Benign</option>
+              <option value="malicious">Malicious</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Note</label>
+            <input name="note" placeholder="Optional context for tuning">
+          </div>
+          <button class="btn btn-primary" type="submit">Save feedback</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

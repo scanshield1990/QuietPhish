@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Settings · PhishGuard{% endblock %}
+{% block page_title %}Settings<small>Engine behaviour, enrichment &amp; server</small>{% endblock %}
+{% block content %}
+<form method="post">
+<div class="grid" style="grid-template-columns:1fr 1fr;align-items:start">
+  <div class="card">
+    <div class="card-h"><h3>Detection engine</h3></div>
+    <div class="card-b">
+      {% set det = ['PG_DNS_CHECKS_ENABLED','PG_BEHAVIORAL_ENABLED','PG_SANDBOX_ENABLED','PG_CLAMAV_ENABLED'] %}
+      {% for k in det %}<label class="check" style="margin-bottom:10px"><input type="checkbox" name="{{ k }}" {% if env.get(k,'false')=='true' %}checked{% endif %}><span>{{ k.replace('PG_','').replace('_',' ').title() }}</span></label>{% endfor %}
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+      {% set enr = ['PG_VT_ENABLED','PG_GSB_ENABLED'] %}
+      {% for k in enr %}<label class="check" style="margin-bottom:10px"><input type="checkbox" name="{{ k }}" {% if env.get(k,'false')=='true' %}checked{% endif %}><span>{{ k.replace('PG_','').replace('_',' ').title() }}</span></label>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Mailbox &amp; response</h3></div>
+    <div class="card-b">
+      {% set mb = ['PG_IMAP_USE_SSL','PG_IMAP_UNSEEN_ONLY','PG_IMAP_MARK_READ','PG_MONITOR_ENABLED'] %}
+      {% for k in mb %}<label class="check" style="margin-bottom:10px"><input type="checkbox" name="{{ k }}" {% if env.get(k,'false')=='true' %}checked{% endif %}><span>{{ k.replace('PG_','').replace('_',' ').title() }}</span></label>{% endfor %}
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+      {% set rs = ['PG_REMEDIATION_ENABLED','PG_EXPORT_ENABLED','PG_EXPORT_CEF'] %}
+      {% for k in rs %}<label class="check" style="margin-bottom:10px"><input type="checkbox" name="{{ k }}" {% if env.get(k,'false')=='true' %}checked{% endif %}><span>{{ k.replace('PG_','').replace('_',' ').title() }}</span></label>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Thresholds &amp; intervals</h3></div>
+    <div class="card-b">
+      <div class="row row-3">
+        <div class="field"><label>Suspicious ≥</label><input type="number" name="PG_THRESHOLD_SUSPICIOUS" value="{{ env.get('PG_THRESHOLD_SUSPICIOUS', cfg.threshold_suspicious) }}"></div>
+        <div class="field"><label>Phishing ≥</label><input type="number" name="PG_THRESHOLD_PHISHING" value="{{ env.get('PG_THRESHOLD_PHISHING', cfg.threshold_phishing) }}"></div>
+        <div class="field"><label>Malicious ≥</label><input type="number" name="PG_THRESHOLD_MALICIOUS" value="{{ env.get('PG_THRESHOLD_MALICIOUS', cfg.threshold_malicious) }}"></div>
+      </div>
+      <div class="row row-3">
+        <div class="field"><label>Monitor (s)</label><input type="number" name="PG_MONITOR_INTERVAL" value="{{ env.get('PG_MONITOR_INTERVAL', cfg.monitor_interval) }}"></div>
+        <div class="field"><label>BEC baseline (d)</label><input type="number" name="PG_BEHAVIORAL_BASELINE_DAYS" value="{{ env.get('PG_BEHAVIORAL_BASELINE_DAYS', cfg.behavioral_baseline_days) }}"></div>
+        <div class="field"><label>IMAP port</label><input type="number" name="PG_IMAP_PORT" value="{{ env.get('PG_IMAP_PORT', cfg.imap_port) }}"></div>
+      </div>
+      <div class="row row-2">
+        <div class="field"><label>ClamAV port</label><input type="number" name="PG_CLAMAV_PORT" value="{{ env.get('PG_CLAMAV_PORT', cfg.clamav_port) }}"></div>
+        <div class="field"><label>Web port</label><input type="number" name="PG_WEB_PORT" value="{{ env.get('PG_WEB_PORT', cfg.web_port) }}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Enrichment keys &amp; paths</h3></div>
+    <div class="card-b">
+      <div class="field"><label>Trusted domains</label><input name="PG_TRUSTED_DOMAINS" value="{{ env.get('PG_TRUSTED_DOMAINS','') }}"></div>
+      <div class="field"><label>Org profile path</label><input name="PG_ORG_PROFILE_PATH" value="{{ env.get('PG_ORG_PROFILE_PATH', cfg.org_profile_path) }}"></div>
+      <div class="field"><label>Report directory</label><input name="PG_REPORT_DIR" value="{{ env.get('PG_REPORT_DIR', cfg.report_dir) }}"></div>
+      <div class="field"><label>ClamAV host</label><input name="PG_CLAMAV_HOST" value="{{ env.get('PG_CLAMAV_HOST', cfg.clamav_host) }}"></div>
+      <div class="field"><label>Sandbox provider</label><input name="PG_SANDBOX_PROVIDER" value="{{ env.get('PG_SANDBOX_PROVIDER','') }}"></div>
+      <div class="field"><label>Log level</label>
+        <select name="PG_LOG_LEVEL">{% for l in ['DEBUG','INFO','WARNING','ERROR'] %}<option value="{{ l }}" {% if env.get('PG_LOG_LEVEL','INFO')==l %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      {% set secrets = ['PG_VT_API_KEY','PG_GSB_API_KEY','PG_SANDBOX_API_KEY','PG_SANDBOX_URL','PG_IMAP_PASSWORD','PG_WEB_PASSWORD','PG_WEB_SECRET_KEY'] %}
+      {% for k in secrets %}<div class="field"><label>{{ k.replace('PG_','').replace('_',' ').title() }}</label><input type="password" name="{{ k }}" value="{{ env.get(k,'') }}" placeholder="••••••••"></div>{% endfor %}
+    </div>
+  </div>
+</div>
+<div class="actions" style="margin-top:4px"><button class="btn btn-primary" type="submit">Save settings</button></div>
+</form>
+{% endblock %}

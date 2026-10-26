@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Export · PhishGuard{% endblock %}
+{% block page_title %}Export / SIEM<small>Stream detections to your stack</small>{% endblock %}
+{% block content %}
+<div class="card" style="max-width:820px">
+  <div class="card-h"><h3>Destinations</h3><span class="sub">disabled by default</span></div>
+  <div class="card-b">
+    <form method="post">
+      <label class="check" style="margin-bottom:14px"><input type="checkbox" name="PG_EXPORT_ENABLED" {% if env.get('PG_EXPORT_ENABLED','false')=='true' %}checked{% endif %}><span>Enable export on every analysis</span></label>
+      <label class="check" style="margin-bottom:14px"><input type="checkbox" name="PG_EXPORT_CEF" {% if env.get('PG_EXPORT_CEF','true')=='true' %}checked{% endif %}><span>Syslog format: CEF (else JSON)</span></label>
+      <div class="row row-2">
+        <div class="field"><label>Syslog address</label><input name="PG_EXPORT_SYSLOG_ADDR" value="{{ env.get('PG_EXPORT_SYSLOG_ADDR','') }}" placeholder="udp://localhost:514"></div>
+        <div class="field"><label>Webhook URL</label><input name="PG_EXPORT_WEBHOOK_URL" value="{{ env.get('PG_EXPORT_WEBHOOK_URL','') }}" placeholder="https://hooks.example.com/..."></div>
+      </div>
+      <div class="field"><label>Minimum severity to export</label>
+        <select name="PG_EXPORT_MIN_SEVERITY">
+          {% for s in ['low','medium','high','critical'] %}<option value="{{ s }}" {% if env.get('PG_EXPORT_MIN_SEVERITY','medium')==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" name="action" value="save">Save configuration</button>
+        <button class="btn btn-ghost" type="submit" name="action" value="test">Send test export</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

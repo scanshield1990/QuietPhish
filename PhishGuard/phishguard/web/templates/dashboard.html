@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · PhishGuard{% endblock %}
+{% block page_title %}Dashboard<small>Real-time overview of analyzed mail (local store)</small>{% endblock %}
+{% block content %}
+<script>
+  setInterval(function() {
+    window.location.reload();
+  }, 30000);
+</script>
+{% set total = counts.values()|sum %}
+{% set threats = counts.phishing + counts.malicious + counts.suspicious %}
+{% set last = recent[0].timestamp if recent else "—" %}
+<div class="grid grid-4" style="margin-bottom:18px">
+  <div class="stat"><div class="label">Total analyzed</div><div class="value">{{ total }}</div><div class="meta">Stored locally · offline</div></div>
+  <div class="stat malicious"><div class="label">Threats</div><div class="value">{{ threats }}</div><div class="meta">{{ ((threats/total*100)|round(1)) if total else 0 }}% of traffic</div></div>
+  <div class="stat phishing"><div class="label">Phishing</div><div class="value">{{ counts.phishing }}</div><div class="meta">confirmed / likely</div></div>
+  <div class="stat malicious"><div class="label">Malicious</div><div class="value">{{ counts.malicious }}</div><div class="meta">high-confidence</div></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1.6fr 1fr;align-items:start">
+  <div class="card">
+    <div class="card-h"><h3>Recent analyses</h3><a class="btn btn-ghost btn-sm" href="/reports">View all</a></div>
+    <div class="card-b" style="padding:0">
+      {% if recent %}
+      <table class="table">
+        <thead><tr><th>Subject</th><th>Sender</th><th>Verdict</th><th>Score</th><th>Time</th></tr></thead>
+        <tbody>
+        {% for r in recent %}
+          <tr>
+            <td><a class="subj" href="/report/{{ r.report_id }}">{{ r.source.subject or '(no subject)' }}</a>
+                <small class="mono">{{ r.report_id }}</small></td>
+            <td>{{ r.sender.display_name or r.sender.from }}<br><small class="muted">{{ r.sender.from }}</small></td>
+            <td><span class="badge {{ r.verdict }}"><span class="bdot"></span>{{ r.verdict|capitalize }}</span></td>
+            <td><span class="score-pill">{{ r.risk_score }}</span></td>
+            <td class="muted small">{{ r.timestamp[:19]|replace('T',' ') }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No analyses yet. Run a <a href="/scan">scan</a> or connect a <a href="/mailbox">mailbox</a>.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid" style="gap:18px">
+    <div class="card">
+      <div class="card-h"><h3>Verdict distribution</h3></div>
+      <div class="card-b">
+        <div class="vbar">
+          <span class="safe" style="width:{{ (counts.safe/total*100) if total else 0 }}%"></span>
+          <span class="suspicious" style="width:{{ (counts.suspicious/total*100) if total else 0 }}%"></span>
+          <span class="phishing" style="width:{{ (counts.phishing/total*100) if total else 0 }}%"></span>
+          <span class="malicious" style="width:{{ (counts.malicious/total*100) if total else 0 }}%"></span>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--safe)"></i>Safe {{ counts.safe }}</span>
+          <span><i style="background:var(--suspicious)"></i>Suspicious {{ counts.suspicious }}</span>
+          <span><i style="background:var(--phishing)"></i>Phishing {{ counts.phishing }}</span>
+          <span><i style="background:var(--malicious)"></i>Malicious {{ counts.malicious }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">
+    <h3>Security Monitoring</h3>
+  </div>
+
+  <div class="card-b">
+    <h4>GitHub Email Corpus Monitor</h4>
+
+    <p>
+      Status:
+      {% if github_monitor.active %}
+        <span class="badge safe">● Running</span>
+      {% else %}
+        <span class="badge malicious">● Stopped / No recent activity</span>
+      {% endif %}
+    </p>
+
+    <p>Last Check: {{ github_monitor.last_check or '—' }}</p>
+    <p>Last Successful Sync: {{ github_monitor.last_sync or '—' }}</p>
+    <p>New Samples Detected: {{ github_monitor.new_samples or 0 }}</p>
+    <p>Investigations Completed: {{ github_monitor.investigations_completed or 0 }}</p>
+    <p>Investigation Failures: {{ github_monitor.investigations_failed or 0 }}</p>
+
+    <hr>
+
+    <h4>Microsoft 365 Mailbox Monitor</h4>
+
+    <p>
+      Status:
+      {% if monitor %}
+        <span class="badge safe">● Running</span>
+      {% else %}
+        <span class="badge suspicious">● Stopped</span>
+      {% endif %}
+    </p>
+
+    <p>Last Scan: {{ last[:19]|replace('T',' ') if recent else '—' }}</p>
+
+    <div class="actions">
+      <a class="btn btn-primary btn-sm" href="/scan">New Scan</a>
+      <a class="btn btn-ghost btn-sm" href="/mailbox">Mailbox</a>
+      <a class="btn btn-ghost btn-sm" href="/feeds">Feeds</a>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+{% endblock %}

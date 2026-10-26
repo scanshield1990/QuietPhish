@@ -1,0 +1,62 @@
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+secrets.json
+credentials.json
+token_cache.json
+.msal_cache*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+
+# Investigation data
+investigations/
+evidence/
+reports/
+uploads/
+downloads/
+
+# Local configuration and sensitive data
+config_store.json
+settings.json
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+# Email corpus is cloned separately during installation
+/email-corpus/
+
+# Exclude preserved Git repository backups
+.git-backup/
+
+# Next.js generated files
+.next/
+node_modules/
+
+# QuietPhish local automation state
+historical_queue_state.json
+monitor_status.json
+
+# Local organization profile
+/PhishGuard/org_profile.json

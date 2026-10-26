@@ -1,0 +1,19 @@
+dnspython>=2.4
+requests>=2.31
+python-dotenv>=1.0
+fastapi>=0.110
+uvicorn>=0.27
+flask>=3.0
+flask-login>=0.6
+werkzeug>=3.0
+dkimpy>=1.1
+pyclamd>=0.4
+
+# Development / testing
+pytest>=8.0
+pytest-cov>=4.0
+mypy>=1.8
+ruff>=0.3
+black>=24.0
+msal>=1.30
+pywin32>=306

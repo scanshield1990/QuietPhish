@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Scan · PhishGuard{% endblock %}
+{% block page_title %}Scan<small>Analyze a message, pasted text, or a URL on demand</small>{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns:1fr;max-width:900px">
+  <div class="card">
+    <div class="card-h"><h3>New analysis</h3></div>
+    <div class="card-b">
+      <div class="tabs">
+        <div class="tab active" data-tab="eml">Upload .eml</div>
+        <div class="tab" data-tab="text">Paste text</div>
+        <div class="tab" data-tab="url">Scan URL</div>
+      </div>
+      <form method="post" enctype="multipart/form-data">
+        <div class="tabpane active" id="tab-eml">
+          <div class="field"><label>Email file (.eml)</label><input type="file" name="eml"></div>
+          <button class="btn btn-primary" type="submit">Analyze message</button>
+        </div>
+        <div class="tabpane" id="tab-text">
+          <div class="field"><label>Message body / headers</label><textarea name="text" placeholder="Paste raw email text or headers here…"></textarea></div>
+          <button class="btn btn-primary" type="submit">Analyze text</button>
+        </div>
+        <div class="tabpane" id="tab-url">
+          <div class="field"><label>URL to inspect</label><input name="url" placeholder="https://example.com/login"></div>
+          <button class="btn btn-primary" type="submit">Analyze URL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% if result_html %}<div>{{ result_html|safe }}</div>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+  }));
+</script>
+{% endblock %}
